@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Twin Cities Court Finder</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>🏀 Twin Cities Court Finder</h1>
+  <button class="btn" id="about">Design changes</button><button class="btn" id="theme" aria-label="Toggle dark mode">◐</button>
+  <button class="btn pri" id="auth">Sign in</button>
+</header>
+<div class="bar">
+  <input type="search" id="q" placeholder="Search by court or neighborhood" aria-label="Search courts">
+  <div class="chips" role="group" aria-label="Filters" id="chips"></div>
+</div>
+<div class="meta"><span id="count"></span>
+  <label>Sort: <select id="sort" class="btn"><option value="mi">Nearest</option><option value="crowd">Least crowded</option><option value="cond">Best condition</option></select></label>
+</div>
+<div class="tabs" role="tablist"><button class="btn" role="tab" id="tl" aria-selected="true">List</button><button class="btn" role="tab" id="tm" aria-selected="false">Map</button></div>
+<main>
+  <section id="list" aria-label="Court results"></section>
+  <section id="mapwrap" class="hide" aria-label="Map of courts">
+    <svg viewBox="0 0 600 440" role="img" aria-label="Schematic map of Minneapolis courts" id="svg">
+      <path d="M455 0 C440 90 470 150 430 230 C400 300 430 380 400 440 L440 440 C470 380 450 300 480 230 C520 150 490 90 500 0Z" fill="var(--water)"/>
+      <ellipse cx="190" cy="200" rx="34" ry="46" fill="var(--water)"/><ellipse cx="150" cy="130" rx="26" ry="20" fill="var(--water)"/><ellipse cx="300" cy="400" rx="46" ry="26" fill="var(--water)"/>
+      <path d="M0 250 H600 M300 0 V440 M0 120 H455 M120 0 V440" stroke="var(--line)" stroke-width="5" fill="none"/>
+      <text x="470" y="30" fill="var(--mute)" font-size="12">Mississippi R.</text>
+      <g id="pins"></g>
+      <g id="me"><circle cx="300" cy="250" r="9" fill="#1a73e8" stroke="#fff" stroke-width="3"/><text x="300" y="276" text-anchor="middle" font-size="12" fill="var(--ink)">You (sample)</text></g>
+    </svg>
+    <div id="tip">Select a pin to preview a court.</div>
+  </section>
+</main>
+<footer>Prototype for a class project. Court data is sample data and the map is a simplified schematic, not real geography. Built with plain HTML/CSS/JS, no templates or external libraries used.</footer>
+<dialog id="dlg"></dialog>
+<div id="toast" class="hide" role="status"></div>
+<script src="script.js"></script>
+</body>
+</html>

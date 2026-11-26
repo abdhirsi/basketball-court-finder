@@ -4,12 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Twin Cities Court Finder</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <header>
   <h1>🏀 Twin Cities Court Finder</h1>
-  <button class="btn" id="about">Design changes</button><button class="btn" id="theme" aria-label="Toggle dark mode">◐</button>
+  <button class="btn" id="loc">📍 My location</button><button class="btn" id="about">Design changes</button><button class="btn" id="theme" aria-label="Toggle dark mode">◐</button>
   <button class="btn pri" id="auth">Sign in</button>
 </header>
 <div class="bar">
@@ -23,20 +24,14 @@
 <main>
   <section id="list" aria-label="Court results"></section>
   <section id="mapwrap" class="hide" aria-label="Map of courts">
-    <svg viewBox="0 0 600 440" role="img" aria-label="Schematic map of Minneapolis courts" id="svg">
-      <path d="M455 0 C440 90 470 150 430 230 C400 300 430 380 400 440 L440 440 C470 380 450 300 480 230 C520 150 490 90 500 0Z" fill="var(--water)"/>
-      <ellipse cx="190" cy="200" rx="34" ry="46" fill="var(--water)"/><ellipse cx="150" cy="130" rx="26" ry="20" fill="var(--water)"/><ellipse cx="300" cy="400" rx="46" ry="26" fill="var(--water)"/>
-      <path d="M0 250 H600 M300 0 V440 M0 120 H455 M120 0 V440" stroke="var(--line)" stroke-width="5" fill="none"/>
-      <text x="470" y="30" fill="var(--mute)" font-size="12">Mississippi R.</text>
-      <g id="pins"></g>
-      <g id="me"><circle cx="300" cy="250" r="9" fill="#1a73e8" stroke="#fff" stroke-width="3"/><text x="300" y="276" text-anchor="middle" font-size="12" fill="var(--ink)">You (sample)</text></g>
-    </svg>
+    <div id="map" role="application" aria-label="Map of basketball courts"></div>
     <div id="tip">Select a pin to preview a court.</div>
   </section>
 </main>
-<footer>Prototype for a class project. Court data is sample data and the map is a simplified schematic, not real geography. Built with plain HTML/CSS/JS, no templates or external libraries used.</footer>
+<footer>Class project prototype. Court locations come from OpenStreetMap, so names, fees and conditions may be missing or out of date; crowd levels come only from user reports (none are real yet). Map data © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors. Map library: <a href="https://leafletjs.com">Leaflet</a> (BSD-2-Clause). No page templates used.</footer>
 <dialog id="dlg"></dialog>
 <div id="toast" class="hide" role="status"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="script.js"></script>
 </body>
 </html>

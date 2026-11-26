@@ -50,3 +50,5 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 footer{padding:14px 16px 24px;color:var(--mute);font-size:.85rem}
 .empty{padding:24px;text-align:center;color:var(--mute);border:2px dashed var(--line);border-radius:14px}
 @media(min-width:860px){main{grid-template-columns:minmax(340px,1fr) 1.2fr}.tabs{display:none}}
+#map{height:440px;z-index:0}.mk{width:30px;height:30px;border-radius:50%;color:#fff;font:700 13px system-ui;display:grid;place-items:center;border:2px solid #fff;box-shadow:0 1px 4px #0006}.mk.sel{border-color:#000;transform:scale(1.3)}footer a{color:inherit}
+.crowd.None{color:var(--mute)}

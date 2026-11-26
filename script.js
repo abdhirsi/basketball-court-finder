@@ -2,20 +2,13 @@ const FB=[["Loring Park",44.9686,-93.2889],["Elliot Park",44.9737,-93.2590],["Po
 let C=[],ME={lat:44.9778,lng:-93.265},map,layer;
 const hav=(a,b,c,d)=>{const r=x=>x*Math.PI/180,k=Math.sin(r(c-a)/2)**2+Math.cos(r(a))*Math.cos(r(c))*Math.sin(r(d-b)/2)**2;return 3958.8*2*Math.asin(Math.sqrt(k))};
 function mk(n,la,ln,t){t=t||{};return{n,h:t.operator||"Minneapolis / St. Paul",t:(t.indoor=="yes"||t.building)?"Indoor":"Outdoor",f:t.fee=="yes"?"Paid":"Free",c:0,hp:t.hoops||"\u2014",l:t.lit=="yes",lat:la,lng:ln,cr:"None",a:t.surface?["Surface: "+t.surface]:["Not listed"],no:"From OpenStreetMap. Verify access and fees before you go.",t0:null}}
-function CCS(){const L2=[["Peavey Park open gym","2117 West River Road North, Minneapolis, MN 55411","Listed by the Minneapolis Park Board as an open gym. Confirm it is free and check times before you go.",true]];
- return L2.map(x=>{const c=mk(x[0],null,null);c.h="Community center";c.t="Indoor";c.f="Free";c.addr=x[1];c.no=x[2];c.v=x[3];c.a=["Gym"];return c})}
+function dedupe(L){const out=[];L.forEach(c=>{const m=out.find(o=>hav(o.lat,o.lng,c.lat,c.lng)<0.04);if(m){m.k=(m.k||1)+1;m.hp=m.k+" courts";if(m.n=="Unnamed court"&&c.n!="Unnamed court")m.n=c.n}else out.push(c)});return out}
+function CCS(){const L2=[["Peavey Park open gym","2117 West River Road North, Minneapolis, MN 55411","Listed by the Minneapolis Park Board as an open gym. Confirm it is free and check times before you go.",true,"Indoor","Minneapolis"],["Highwood Hills Recreation Center","2192 Londin Lane, Saint Paul, MN 55119","Outdoor basketball courts at a St. Paul recreation center (rebuilt in 2025 per the city). Confirm hours and access before you go.",true,"Outdoor","St. Paul"]];
+ return L2.map(x=>{const c=mk(x[0],null,null);c.h=x[5];c.t=x[4];c.f="Free";c.addr=x[1];c.no=x[2];c.v=x[3];c.a=["Basketball"];return c})}
 const dm=c=>c.lat==null?99:hav(ME.lat,ME.lng,c.lat,c.lng);
 function fin(){C=C.concat(CCS());C.forEach((c,i)=>{c.id=i+1;c.mi=dm(c)});chips();render();fit()}
-async function load(){let ok=false;
- try{const bb='(44.85,-93.40,45.08,-92.95)';const q='[out:json][timeout:40];area["boundary"="administrative"]["admin_level"="8"]["name"="Minneapolis"]->.a;area["boundary"="administrative"]["admin_level"="8"]["name"="Saint Paul"]->.b;(nwr["sport"="basketball"](area.a)'+bb+';nwr["sport"="basketball"](area.b)'+bb+';);out center tags;';
-  const r=await fetch("https://overpass-api.de/api/interpreter",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:"data="+encodeURIComponent(q)});
-  const j=await r.json(),seen=new Set();
-  C=j.elements.map(e=>{const t=e.tags||{},la=e.lat??(e.center&&e.center.lat),ln=e.lon??(e.center&&e.center.lon);
-   if(la==null||t.leisure!="pitch"||t.indoor=="yes"||t.building||t.fee=="yes"||/^(private|customers|permit|members|no)$/.test(t.access||""))return null;
-   const k=la.toFixed(4)+ln.toFixed(4);if(seen.has(k))return null;seen.add(k);
-   return mk(t.name||(t.operator?t.operator+" court":"Unnamed court"),la,ln,t)}).filter(Boolean);ok=C.length>=3}catch(e){}
- if(!ok){C=FB.map(p=>{const c=mk(p[0],p[1],p[2]);c.no="Approximate location. Live data could not be loaded.";return c});toast("Could not load live data, showing a short backup list")}
- fin()}
+const STATIC=[["North Penn Avenue",44.988539,-93.307499,"asphalt",0,"2 courts"],["2000 Northeast 2nd Street",45.008178,-93.26647],["3420 3rd Avenue South",44.940622,-93.272401],["3600 North Knox Avenue",45.023816,-93.300272],["Mississippi East Bank Trail",45.00063,-93.273011],["711 Southeast 11th Avenue",44.985548,-93.237595],["Morgan Avenue South",44.972613,-93.301105,"asphalt"],["Portland Avenue South",44.966434,-93.268193],["1601 West 50th Street",44.911812,-93.299742,0,0,"2 courts"],["300 North 34th Avenue",45.017228,-93.283478],["Lyndale Avenue South",44.942282,-93.287756,"concrete",1,"2 courts"],["4641 13th Avenue South",44.918449,-93.256904,"asphalt"],["200 Upton Avenue South",44.975109,-93.316219,0,0,"2 courts"],["West 50th Street",44.912653,-93.316769],["5330 13th Avenue South",44.906562,-93.25662,"asphalt",0,"2 courts"],["Willow Street (near Loring Park)",44.969703,-93.282648,"asphalt",1,"2 courts"]];
+async function load(){C=STATIC.map(s=>{const c=mk(s[0]+" court",s[1],s[2],{surface:s[3]||"",lit:s[4]?"yes":"",hoops:s[5]||"1 court"});c.h="Minneapolis";c.no="Location from OpenStreetMap. Access and fees are not verified, so check before you go.";return c});fin()}
 function ago(c){const m=Math.max(1,Math.round((Date.now()-c.t0)/60000));return m<60?m+" min ago":Math.round(m/60)+" hr ago"}
 function fit(){if(C.some(c=>c.lat!=null))map.fitBounds(C.filter(c=>c.lat!=null).map(c=>[c.lat,c.lng]),{padding:[30,30],maxZoom:14})}
 const F=[["Indoor",c=>c.t=="Indoor"],["Outdoor",c=>c.t=="Outdoor"],["Free",c=>c.f=="Free"],["Lit at night",c=>c.l],["Good condition",c=>c.c>=4],["Low crowd",c=>c.cr=="Low"],["Favorites",c=>fav.has(c.id)]];

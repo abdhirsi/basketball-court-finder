@@ -1,17 +1,23 @@
-const FB=[["Loring Park",44.9686,-93.2889],["Elliot Park",44.9737,-93.2590],["Powderhorn Park",44.9487,-93.2582],["North Commons Park",44.9987,-93.2917],["Bryant Square Park",44.9482,-93.2800],["Webber Park",45.0245,-93.3014]];
-let C=[],ME={lat:44.9778,lng:-93.265},map,layer;
+let API=false,C=[],ME={lat:44.9778,lng:-93.265},map,layer;
 const hav=(a,b,c,d)=>{const r=x=>x*Math.PI/180,k=Math.sin(r(c-a)/2)**2+Math.cos(r(a))*Math.cos(r(c))*Math.sin(r(d-b)/2)**2;return 3958.8*2*Math.asin(Math.sqrt(k))};
 function mk(n,la,ln,t){t=t||{};return{n,h:t.operator||"Minneapolis / St. Paul",t:(t.indoor=="yes"||t.building)?"Indoor":"Outdoor",f:t.fee=="yes"?"Paid":"Free",c:0,hp:t.hoops||"\u2014",l:t.lit=="yes",lat:la,lng:ln,cr:"None",a:t.surface?["Surface: "+t.surface]:["Not listed"],no:"From OpenStreetMap. Verify access and fees before you go.",t0:null}}
-function dedupe(L){const out=[];L.forEach(c=>{const m=out.find(o=>hav(o.lat,o.lng,c.lat,c.lng)<0.04);if(m){m.k=(m.k||1)+1;m.hp=m.k+" courts";if(m.n=="Unnamed court"&&c.n!="Unnamed court")m.n=c.n}else out.push(c)});return out}
-function CCS(){const L2=[["Peavey Park open gym","2117 West River Road North, Minneapolis, MN 55411","Listed by the Minneapolis Park Board as an open gym. Confirm it is free and check times before you go.",true,"Indoor","Minneapolis"],["Highwood Hills Recreation Center","2192 Londin Lane, Saint Paul, MN 55119","Outdoor basketball courts at a St. Paul recreation center (rebuilt in 2025 per the city). Confirm hours and access before you go.",true,"Outdoor","St. Paul"]];
- return L2.map(x=>{const c=mk(x[0],null,null);c.h=x[5];c.t=x[4];c.f="Free";c.addr=x[1];c.no=x[2];c.v=x[3];c.a=["Basketball"];return c})}
 const dm=c=>c.lat==null?99:hav(ME.lat,ME.lng,c.lat,c.lng);
-function fin(){C=C.concat(CCS());C.forEach((c,i)=>{c.id=i+1;c.mi=dm(c)});chips();render();fit()}
-const STATIC=[["North Penn Avenue",44.988539,-93.307499,"asphalt",0,"2 courts"],["2000 Northeast 2nd Street",45.008178,-93.26647],["3420 3rd Avenue South",44.940622,-93.272401],["3600 North Knox Avenue",45.023816,-93.300272],["Mississippi East Bank Trail",45.00063,-93.273011],["711 Southeast 11th Avenue",44.985548,-93.237595],["Morgan Avenue South",44.972613,-93.301105,"asphalt"],["Portland Avenue South",44.966434,-93.268193],["1601 West 50th Street",44.911812,-93.299742,0,0,"2 courts"],["300 North 34th Avenue",45.017228,-93.283478],["Lyndale Avenue South",44.942282,-93.287756,"concrete",1,"2 courts"],["4641 13th Avenue South",44.918449,-93.256904,"asphalt"],["200 Upton Avenue South",44.975109,-93.316219,0,0,"2 courts"],["West 50th Street",44.912653,-93.316769],["5330 13th Avenue South",44.906562,-93.25662,"asphalt",0,"2 courts"],["Willow Street (near Loring Park)",44.969703,-93.282648,"asphalt",1,"2 courts"]];
-async function load(){C=STATIC.map(s=>{const c=mk(s[0]+" court",s[1],s[2],{surface:s[3]||"",lit:s[4]?"yes":"",hoops:s[5]||"1 court"});c.h="Minneapolis";c.no="Location from OpenStreetMap. Access and fees are not verified, so check before you go.";return c});fin()}
+function fin(){C.forEach((c,i)=>{c.id=i+1;c.mi=dm(c)});chips();render();fit()}
+const PARKS=[["Powderhorn Park","3400 15th Ave S, Minneapolis, MN 55407","South"],["Peavey Field Park","730 E 22nd St, Minneapolis, MN 55404","Central"],["Elliot Park","1000 E 14th St, Minneapolis, MN 55404","Downtown"],["Currie Park","500 15th Ave. S, Minneapolis, MN 55454","Cedar-Riverside"],["Van Cleve Park","901 15th Ave SE, Minneapolis, MN 55414","Southeast"],["Bethune Park","1304 N 10th Ave, Minneapolis, MN 55411","North"],["East Phillips Park","2399 17th Ave S, Minneapolis, MN 55404","South"],["Beltrami Park","1111 Summer St NE, Minneapolis, MN 55413","Northeast"],["Bryant Square Park","3101 Bryant Ave S, Minneapolis, MN 55408","Uptown"],["Dickman Park","614 NE 2nd St, Minneapolis, MN 55413","Northeast"],["Audubon Park basketball court","1320 29th Ave NE, Minneapolis, MN 55418","Northeast"],["Matthews Park basketball courts","Matthews Park, Minneapolis, MN 55406","Seward"]];
+function pk(p){const c=mk(p[0],null,null);c.h=p[2];c.addr=p[1];c.no="Address from the project group's court list. Confirm access and condition before you go.";return c}
+function load(){C=PARKS.map(pk);fin();geocode()}
+async function geocode(){let cache={};try{cache=JSON.parse(localStorage.getItem("geo1")||"{}")}catch(e){}
+ C.forEach(c=>{if(cache[c.addr]){c.lat=cache[c.addr][0];c.lng=cache[c.addr][1];c.mi=dm(c)}});render();fit();
+ for(const c of C){if(c.lat!=null)continue;
+  try{const r=await fetch("https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=us&q="+encodeURIComponent(c.addr));const j=await r.json();
+   if(j[0]){c.lat=+j[0].lat;c.lng=+j[0].lon;c.mi=dm(c);cache[c.addr]=[c.lat,c.lng];try{localStorage.setItem("geo1",JSON.stringify(cache))}catch(e){}render()}}catch(e){}
+  await new Promise(r=>setTimeout(r,1100))}
+ fit()}
+async function doAuth(a){user=true;$("#auth").textContent="Hi, Player \u2713";$("#dlg").close();toast("Signed in (demo account)")}
+function authDlg(){const d=$("#dlg");d.innerHTML='<div class="dlg"><h2>Sign in</h2><p class="sub">Accounts let you report crowds and problems.</p><label>Username<br><input id="au" autocomplete="username" style="width:100%;padding:10px;min-height:44px"></label><br><br><label>Password (8+ characters)<br><input id="ap" type="password" autocomplete="current-password" style="width:100%;padding:10px;min-height:44px"></label><div class="row"><button class="btn pri" data-auth="login">Sign in</button><button class="btn" data-auth="register">Create account</button><button class="btn" data-close>Cancel</button></div><p class="sub" id="aerr" role="alert"></p></div>';d.showModal()}
 function ago(c){const m=Math.max(1,Math.round((Date.now()-c.t0)/60000));return m<60?m+" min ago":Math.round(m/60)+" hr ago"}
 function fit(){if(C.some(c=>c.lat!=null))map.fitBounds(C.filter(c=>c.lat!=null).map(c=>[c.lat,c.lng]),{padding:[30,30],maxZoom:14})}
-const F=[["Indoor",c=>c.t=="Indoor"],["Outdoor",c=>c.t=="Outdoor"],["Free",c=>c.f=="Free"],["Lit at night",c=>c.l],["Good condition",c=>c.c>=4],["Low crowd",c=>c.cr=="Low"],["Favorites",c=>fav.has(c.id)]];
+const F=[...new Set(PARKS.map(p=>p[2]))].map(n=>[n,c=>c.h==n,1]).concat([["Low crowd",c=>c.cr=="Low"],["Favorites",c=>fav.has(c.id)]]);
 const on=new Set(),fav=new Set();let sel=null,user=false,view="list";
 addEventListener("error",e=>{try{toast("Error: "+e.message)}catch(_){}});
 const $=s=>document.querySelector(s),R={Low:0,None:1,Moderate:2,Busy:3},IC={Low:"●",Moderate:"▲",Busy:"■",None:"○"},CL={Low:"var(--low)",Moderate:"var(--mod)",Busy:"var(--busy)",None:"#6b6b73"},CT=k=>k=="None"?"No reports":k;
@@ -19,7 +25,7 @@ const CN=["Not rated","Poor","Fair","Okay","Good","Excellent"];
 const tm=c=>c.lat==null?"Distance not available (address only)":`🚶 ${Math.round(c.mi*20)} min · 🚲 ${Math.round(c.mi*6)} min · 🚗 ${Math.round(c.mi*3+3)} min`;
 function toast(m){const t=$("#toast");t.textContent=m;t.classList.remove("hide");clearTimeout(toast.i);toast.i=setTimeout(()=>t.classList.add("hide"),2400)}
 function res(){const q=$("#q").value.toLowerCase(),s=$("#sort").value;
- let r=C.filter(c=>(c.n+c.h).toLowerCase().includes(q)&&[...on].every(k=>F[k][1](c)));
+ const nb=[...on].filter(k=>F[k][2]),ot=[...on].filter(k=>!F[k][2]);let r=C.filter(c=>(c.n+c.h).toLowerCase().includes(q)&&ot.every(k=>F[k][1](c))&&(!nb.length||nb.some(k=>F[k][1](c))));
  r.sort((a,b)=>s=="mi"?a.mi-b.mi:s=="cond"?b.c-a.c:R[a.cr]-R[b.cr]||a.mi-b.mi);return r}
 function render(){const r=res();$("#count").textContent=`${r.length} of ${C.length} courts`;
  $("#list").innerHTML=r.length?r.map((c,i)=>`<article class="card ${sel==c.id?"sel":""}" tabindex="0" data-id="${c.id}" id="c${c.id}" aria-label="${c.n}">
@@ -40,10 +46,11 @@ function open(id){const c=C[id-1];sel=id;render();const d=$("#dlg");
  d.showModal();d.dataset.id=id}
 document.addEventListener("click",e=>{const t=e.target,g=s=>t.closest(s);
  if(g("[data-fav]")){e.stopPropagation();const id=+g("[data-fav]").dataset.fav;fav.has(id)?fav.delete(id):fav.add(id);render();if($("#dlg").open)open(id);return}
- if(g("[data-rep]")){const c=C[$("#dlg").dataset.id-1];c.cr=g("[data-rep]").dataset.rep;c.t0=Date.now();toast("Thanks! Crowd updated to "+c.cr);open(c.id);return}
+ if(g("[data-rep]")){const c=C[$("#dlg").dataset.id-1],lv=g("[data-rep]").dataset.rep;(async()=>{if(API){const r=await post("api/report.php",{court_id:c.db,level:lv});if(r.error)return toast(r.error)}c.cr=lv;c.t0=Date.now();toast("Thanks! Crowd updated to "+lv);open(c.id);render()})();return}
+ if(g("[data-auth]")){doAuth(g("[data-auth]").dataset.auth);return}
  if(g("[data-share]")){toast("Link copied (demo)");return}
  if(g("[data-prob]")){if(!$("#prb")){const d=document.createElement("div");d.id="prb";d.className="box";d.innerHTML='<b>What’s wrong?</b><div class="row">'+["Broken rim","Damaged surface","Locked or closed","Poor lighting"].map(k=>'<button class="btn" data-issue="'+k+'">'+k+'</button>').join("")+'</div>';g("[data-prob]").closest(".row").before(d)}return}
- if(g("[data-issue]")){toast("Thanks! Reported: "+g("[data-issue]").dataset.issue);$("#prb").remove();return}
+ if(g("[data-issue]")){const k=g("[data-issue]").dataset.issue,c=C[$("#dlg").dataset.id-1];(async()=>{if(API){const r=await post("api/report.php",{court_id:c.db,issue:k});if(r.error)return toast(r.error)}toast("Thanks! Reported: "+k);const p=$("#prb");if(p)p.remove()})();return}
  if(g("[data-close]")){$("#dlg").close();return}
  if(g("[data-open]")){open(+g("[data-open]").dataset.open);return}
  if(g(".card")){const id=+g(".card").dataset.id;if(sel==id||view=="list")open(id);else pick(id,false);return}
@@ -55,7 +62,7 @@ function chips(){$("#chips").innerHTML=F.map((f,i)=>`<button class="chip" aria-p
 $("#chips").addEventListener("click",e=>{const b=e.target.closest("[data-chip]");if(!b)return;const i=+b.dataset.chip;on.has(i)?on.delete(i):on.add(i);chips();render()});
 $("#q").oninput=render;$("#sort").onchange=render;
 $("#about").onclick=()=>{const d=$("#dlg");d.innerHTML='<div class="dlg"><h2>What changed and why</h2><p class="sub">Fixes from usability testing</p><p><b>Filters hard to find:</b> chips are always visible under the search bar, with a Clear all option.</p><p><b>Map and list disconnected:</b> numbered pins match numbered cards, and selecting one highlights the other.</p><p><b>Hard to read:</b> larger text, high contrast, dark mode, and crowd levels shown with symbol plus word, not color alone.</p><p><b>New in this version:</b> last-report time, directions link, and report-a-problem.</p><div class="row"><button class="btn pri" data-close>Close</button></div></div>';d.showModal()};
-$("#auth").onclick=()=>{user=!user;$("#auth").textContent=user?"Hi, Player ✓":"Sign in";toast(user?"Signed in (demo account)":"Signed out")};
+$("#auth").onclick=async()=>{if(user){if(API)await post("api/auth.php",{action:"logout"});user=false;$("#auth").textContent="Sign in";toast("Signed out")}else authDlg()};
 $("#theme").onclick=()=>{const d=document.documentElement,dark=getComputedStyle(d).getPropertyValue("--bg").trim()=="#17171a";d.dataset.theme=dark?"light":"dark"};
 function setView(v){view=v;setTimeout(()=>map&&map.invalidateSize(),50);$("#tl").setAttribute("aria-selected",v=="list");$("#tm").setAttribute("aria-selected",v=="map");
  $("#list").classList.toggle("hide",v=="map"&&innerWidth<860);$("#mapwrap").classList.toggle("hide",v=="list"&&innerWidth<860)}
@@ -65,4 +72,4 @@ addEventListener("resize",lay);
 map=L.map("map");L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"&copy; OpenStreetMap contributors"}).addTo(map);
 layer=L.layerGroup().addTo(map);map.setView([ME.lat,ME.lng],11);
 $("#loc").onclick=()=>{if(!navigator.geolocation)return toast("Location not supported");navigator.geolocation.getCurrentPosition(p=>{ME={lat:p.coords.latitude,lng:p.coords.longitude};C.forEach(c=>c.mi=dm(c));L.circleMarker([ME.lat,ME.lng],{radius:8,color:"#fff",fillColor:"#1a73e8",fillOpacity:1,weight:3}).addTo(map);$("#sort").value="mi";render();toast("Distances now use your location")},()=>toast("Could not get your location"))};
-lay();toast("Loading real courts from OpenStreetMap...");load();
+lay();load();

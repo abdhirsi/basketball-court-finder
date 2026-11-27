@@ -1,89 +1,9 @@
--- phpMyAdmin SQL Dump
--- version 5.2.1
--- https://www.phpmyadmin.net/
---
--- Host: localhost
--- Generation Time: Nov 27, 2026 at 05:34 AM
--- Server version: 10.4.28-MariaDB
--- PHP Version: 8.0.28
-
-CREATE DATABASE IF NOT EXISTS twin_cities_hoops
-CHARACTER SET utf8mb4
-COLLATE utf8mb4_unicode_ci;
-
+CREATE DATABASE IF NOT EXISTS twin_cities_hoops CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE twin_cities_hoops;
-
-SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-START TRANSACTION;
-SET time_zone = "+00:00";
-
-
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
-
---
--- Database: `twin_cities_hoops`
---
-
--- --------------------------------------------------------
-
---
--- Table structure for table `courts`
---
--- Error reading structure for table twin_cities_hoops.courts: #1142 - SHOW command denied to user ''@'localhost' for table `twin_cities_hoops`.`courts`
--- Error reading data for table twin_cities_hoops.courts: #1064 - You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'FROM `twin_cities_hoops`.`courts`' at line 1
-
--- --------------------------------------------------------
-
---
--- Table structure for table `court_issues`
---
--- Error reading structure for table twin_cities_hoops.court_issues: #1142 - SHOW command denied to user ''@'localhost' for table `twin_cities_hoops`.`court_issues`
--- Error reading data for table twin_cities_hoops.court_issues: #1064 - You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'FROM `twin_cities_hoops`.`court_issues`' at line 1
-
--- --------------------------------------------------------
-
---
--- Table structure for table `court_submissions`
---
--- Error reading structure for table twin_cities_hoops.court_submissions: #1142 - SHOW command denied to user ''@'localhost' for table `twin_cities_hoops`.`court_submissions`
--- Error reading data for table twin_cities_hoops.court_submissions: #1064 - You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'FROM `twin_cities_hoops`.`court_submissions`' at line 1
-
--- --------------------------------------------------------
-
---
--- Table structure for table `crowd_reports`
---
--- Error reading structure for table twin_cities_hoops.crowd_reports: #1142 - SHOW command denied to user ''@'localhost' for table `twin_cities_hoops`.`crowd_reports`
--- Error reading data for table twin_cities_hoops.crowd_reports: #1064 - You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'FROM `twin_cities_hoops`.`crowd_reports`' at line 1
-
--- --------------------------------------------------------
-
---
--- Table structure for table `favorites`
---
--- Error reading structure for table twin_cities_hoops.favorites: #1142 - SHOW command denied to user ''@'localhost' for table `twin_cities_hoops`.`favorites`
--- Error reading data for table twin_cities_hoops.favorites: #1064 - You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'FROM `twin_cities_hoops`.`favorites`' at line 1
-
--- --------------------------------------------------------
-
---
--- Table structure for table `ratings`
---
--- Error reading structure for table twin_cities_hoops.ratings: #1142 - SHOW command denied to user ''@'localhost' for table `twin_cities_hoops`.`ratings`
--- Error reading data for table twin_cities_hoops.ratings: #1064 - You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'FROM `twin_cities_hoops`.`ratings`' at line 1
-
--- --------------------------------------------------------
-
---
--- Table structure for table `users`
---
--- Error reading structure for table twin_cities_hoops.users: #1142 - SHOW command denied to user ''@'localhost' for table `twin_cities_hoops`.`users`
--- Error reading data for table twin_cities_hoops.users: #1064 - You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'FROM `twin_cities_hoops`.`users`' at line 1
-COMMIT;
-
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+CREATE TABLE IF NOT EXISTS users (user_id INT AUTO_INCREMENT PRIMARY KEY, full_name VARCHAR(100) NOT NULL, email VARCHAR(255) NOT NULL UNIQUE, password_hash VARCHAR(255) NOT NULL, role ENUM('user','admin') DEFAULT 'user', is_active BOOLEAN DEFAULT TRUE, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP) ENGINE=InnoDB;
+CREATE TABLE IF NOT EXISTS courts (court_id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(150) NOT NULL, address VARCHAR(255) NOT NULL, city ENUM('Minneapolis','Saint Paul') NOT NULL, zip_code VARCHAR(10), neighborhood VARCHAR(100), latitude DECIMAL(10,7) NOT NULL, longitude DECIMAL(10,7) NOT NULL, court_type ENUM('indoor','outdoor') NOT NULL, court_size ENUM('full','half','both','unknown') DEFAULT 'unknown', hoop_count INT DEFAULT NULL, is_free BOOLEAN DEFAULT NULL, lighting BOOLEAN DEFAULT NULL, parking BOOLEAN DEFAULT NULL, restrooms BOOLEAN DEFAULT NULL, court_condition ENUM('excellent','good','fair','poor','unknown') DEFAULT 'unknown', operating_hours TEXT, description TEXT, image_url VARCHAR(500), source_url VARCHAR(500), verified_at DATE, is_active BOOLEAN DEFAULT TRUE, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, INDEX idx_courts_city(city), INDEX idx_courts_type(court_type), INDEX idx_courts_zip(zip_code), INDEX idx_courts_location(latitude,longitude)) ENGINE=InnoDB;
+CREATE TABLE IF NOT EXISTS favorites (user_id INT NOT NULL, court_id INT NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY(user_id,court_id), FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE CASCADE, FOREIGN KEY(court_id) REFERENCES courts(court_id) ON DELETE CASCADE) ENGINE=InnoDB;
+CREATE TABLE IF NOT EXISTS ratings (rating_id INT AUTO_INCREMENT PRIMARY KEY, user_id INT NOT NULL, court_id INT NOT NULL, rating TINYINT NOT NULL CHECK(rating BETWEEN 1 AND 5), created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, UNIQUE(user_id,court_id), FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE CASCADE, FOREIGN KEY(court_id) REFERENCES courts(court_id) ON DELETE CASCADE) ENGINE=InnoDB;
+CREATE TABLE IF NOT EXISTS crowd_reports (report_id INT AUTO_INCREMENT PRIMARY KEY, user_id INT NOT NULL, court_id INT NOT NULL, crowd_level ENUM('empty','moderate','crowded') NOT NULL, reported_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE CASCADE, FOREIGN KEY(court_id) REFERENCES courts(court_id) ON DELETE CASCADE, INDEX idx_crowd_recent(court_id,reported_at)) ENGINE=InnoDB;
+CREATE TABLE IF NOT EXISTS court_submissions (submission_id INT AUTO_INCREMENT PRIMARY KEY, user_id INT NOT NULL, name VARCHAR(150) NOT NULL, address VARCHAR(255) NOT NULL, city ENUM('Minneapolis','Saint Paul') NOT NULL, court_type ENUM('indoor','outdoor') NOT NULL, description TEXT, status ENUM('pending','approved','rejected') DEFAULT 'pending', submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE CASCADE) ENGINE=InnoDB;
+CREATE TABLE IF NOT EXISTS court_issues (issue_id INT AUTO_INCREMENT PRIMARY KEY, user_id INT NOT NULL, court_id INT NOT NULL, issue_type ENUM('damaged_hoop','poor_surface','closed','incorrect_information','other') NOT NULL, description TEXT, status ENUM('pending','reviewing','resolved') DEFAULT 'pending', reported_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE CASCADE, FOREIGN KEY(court_id) REFERENCES courts(court_id) ON DELETE CASCADE) ENGINE=InnoDB;
